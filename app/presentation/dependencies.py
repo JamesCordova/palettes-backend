@@ -1,9 +1,11 @@
 from typing import Annotated
 
 from fastapi import Depends
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.application.services.color_catalog_service import ColorCatalogService
+from app.core.security import decode_access_token
 from app.application.services.favorite_service import FavoriteService
 from app.application.services.palette_service import PaletteService
 from app.application.services.tag_service import TagService
@@ -96,3 +98,19 @@ def get_tag_service(
     tag_repository: Annotated[TagRepository, Depends(get_tag_repository)],
 ) -> TagService:
     return TagService(tag_repository)
+
+
+_oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=True)
+_oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=False)
+
+
+def get_current_user_id(token: Annotated[str, Depends(_oauth2_scheme)]) -> int:
+    return decode_access_token(token)
+
+
+def get_optional_current_user_id(
+    token: Annotated[str | None, Depends(_oauth2_scheme_optional)],
+) -> int | None:
+    if token is None:
+        return None
+    return decode_access_token(token)

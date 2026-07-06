@@ -2,6 +2,7 @@ from fastapi import FastAPI
 
 from app.presentation.error_handlers import register_error_handlers
 from app.presentation.routers import (
+    auth_router,
     colors_router,
     favorites_router,
     palettes_router,
@@ -13,6 +14,7 @@ app = FastAPI(title="Palette Backend")
 
 register_error_handlers(app)
 
+app.include_router(auth_router.router)
 app.include_router(users_router.router)
 app.include_router(palettes_router.router)
 app.include_router(colors_router.router)
