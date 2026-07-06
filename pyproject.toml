@@ -3,8 +3,24 @@ name = "palette-backend"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 dependencies = [
+    "alembic>=1.18.5",
+    "asyncpg>=0.31.0",
+    "bcrypt<4.1",
+    "email-validator>=2.3.0",
     "fastapi[standard]>=0.139.0",
+    "greenlet>=3.5.3",
+    "passlib[bcrypt]>=1.7.4",
+    "pydantic>=2",
+    "pydantic-settings>=2.14.2",
     "ruff>=0.15.20",
+    "sqlalchemy[asyncio]>=2.0",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
 ]
