@@ -1,7 +1,6 @@
 from app.application.dtos.palette_color_dto import (
     AddPaletteColorDTO,
     ReorderPaletteColorDTO,
-    UpdatePaletteColorDTO,
 )
 from app.application.dtos.palette_dto import CreatePaletteDTO, ForkPaletteDTO, UpdatePaletteDTO
 from app.core.exceptions import ForbiddenError, NotFoundError
