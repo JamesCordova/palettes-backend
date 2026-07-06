@@ -23,8 +23,10 @@ from app.presentation.schemas.pagination_schema import Paginated
 from app.presentation.schemas.palette_schema import (
     ForkPaletteRequest,
     PaletteCreate,
+    PaletteListItemRead,
     PaletteRead,
     PaletteUpdate,
+    PaletteWithColorsRead,
 )
 
 router = APIRouter(prefix="/palettes", tags=["palettes"])
@@ -47,43 +49,46 @@ async def create_palette(
     return PaletteRead.model_validate(palette)
 
 
-@router.get("", response_model=Paginated[PaletteRead])
+@router.get("", response_model=Paginated[PaletteListItemRead])
 async def list_public_palettes(
     service: PaletteServiceDep,
     limit: int = Query(default=DEFAULT_PAGE_SIZE, le=200),
     offset: int = 0,
-) -> Paginated[PaletteRead]:
-    palettes, total = await service.list_public_palettes(limit, offset)
+) -> Paginated[PaletteListItemRead]:
+    items, total = await service.list_public_palettes(limit, offset)
     return Paginated(
-        items=[PaletteRead.model_validate(p) for p in palettes],
+        items=[PaletteListItemRead.from_item(item) for item in items],
         total=total,
         limit=limit,
         offset=offset,
     )
 
 
-@router.get("/search", response_model=Paginated[PaletteRead])
+@router.get("/search", response_model=Paginated[PaletteListItemRead])
 async def search_palettes(
     service: PaletteServiceDep,
     q: str = Query(min_length=1),
     limit: int = Query(default=DEFAULT_PAGE_SIZE, le=200),
     offset: int = 0,
-) -> Paginated[PaletteRead]:
-    palettes, total = await service.search_public_palettes(q, limit, offset)
+) -> Paginated[PaletteListItemRead]:
+    items, total = await service.search_public_palettes(q, limit, offset)
     return Paginated(
-        items=[PaletteRead.model_validate(p) for p in palettes],
+        items=[PaletteListItemRead.from_item(item) for item in items],
         total=total,
         limit=limit,
         offset=offset,
     )
 
 
-@router.get("/{palette_id}", response_model=PaletteRead)
+@router.get("/{palette_id}", response_model=PaletteWithColorsRead)
 async def get_palette(
     palette_id: int, service: PaletteServiceDep, current_user_id: OptionalCurrentUserIdDep
-) -> PaletteRead:
-    palette = await service.get_palette(palette_id, current_user_id)
-    return PaletteRead.model_validate(palette)
+) -> PaletteWithColorsRead:
+    palette, colors = await service.get_palette_with_colors(palette_id, current_user_id)
+    return PaletteWithColorsRead(
+        **PaletteRead.model_validate(palette).model_dump(),
+        colors=[PaletteColorRead.model_validate(c) for c in colors],
+    )
 
 
 @router.patch("/{palette_id}", response_model=PaletteRead)

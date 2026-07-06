@@ -8,7 +8,7 @@ from app.application.services.tag_service import TagService
 from app.core.constants import DEFAULT_PAGE_SIZE
 from app.presentation.dependencies import get_palette_service, get_tag_service
 from app.presentation.schemas.pagination_schema import Paginated
-from app.presentation.schemas.palette_schema import PaletteRead
+from app.presentation.schemas.palette_schema import PaletteListItemRead
 from app.presentation.schemas.tag_schema import TagCreate, TagRead
 
 router = APIRouter(prefix="/tags", tags=["tags"])
@@ -43,16 +43,16 @@ async def delete_tag(tag_id: int, service: TagServiceDep) -> None:
     await service.delete_tag(tag_id)
 
 
-@router.get("/{tag_id}/palettes", response_model=Paginated[PaletteRead])
+@router.get("/{tag_id}/palettes", response_model=Paginated[PaletteListItemRead])
 async def list_palettes_by_tag(
     tag_id: int,
     service: PaletteServiceDep,
     limit: int = Query(default=DEFAULT_PAGE_SIZE, le=200),
     offset: int = 0,
-) -> Paginated[PaletteRead]:
-    palettes, total = await service.list_public_palettes_by_tag(tag_id, limit, offset)
+) -> Paginated[PaletteListItemRead]:
+    items, total = await service.list_public_palettes_by_tag(tag_id, limit, offset)
     return Paginated(
-        items=[PaletteRead.model_validate(p) for p in palettes],
+        items=[PaletteListItemRead.from_item(item) for item in items],
         total=total,
         limit=limit,
         offset=offset,

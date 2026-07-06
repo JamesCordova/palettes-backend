@@ -2,7 +2,13 @@ from app.application.dtos.palette_color_dto import (
     AddPaletteColorDTO,
     ReorderPaletteColorDTO,
 )
-from app.application.dtos.palette_dto import CreatePaletteDTO, ForkPaletteDTO, UpdatePaletteDTO
+from app.application.dtos.palette_dto import (
+    CreatePaletteDTO,
+    ForkPaletteDTO,
+    PaletteListItem,
+    UpdatePaletteDTO,
+)
+from app.application.services.palette_preview import build_palette_list_items
 from app.core.exceptions import ForbiddenError, NotFoundError
 from app.domain.entities.color_catalog import ColorCatalog
 from app.domain.entities.palette import Palette
@@ -48,25 +54,51 @@ class PaletteService:
             raise ForbiddenError(f"Palette {palette_id} is private")
         return palette
 
+    async def get_palette_with_colors(
+        self, palette_id: int, requesting_user_id: int | None
+    ) -> tuple[Palette, list[PaletteColor]]:
+        await self.get_palette(palette_id, requesting_user_id)
+        result = await self._palette_repository.get_by_id_with_colors(palette_id)
+        if result is None:
+            raise NotFoundError(f"Palette {palette_id} not found")
+        return result
+
     async def list_public_palettes(
         self, limit: int = 50, offset: int = 0
-    ) -> tuple[list[Palette], int]:
-        return await self._palette_repository.list_public(limit, offset)
+    ) -> tuple[list[PaletteListItem], int]:
+        palettes, total = await self._palette_repository.list_public(limit, offset)
+        items = await build_palette_list_items(self._palette_color_repository, palettes)
+        return items, total
 
     async def list_user_palettes(
-        self, user_id: int, limit: int = 50, offset: int = 0
-    ) -> tuple[list[Palette], int]:
-        return await self._palette_repository.list_by_user(user_id, limit, offset)
+        self,
+        user_id: int,
+        requesting_user_id: int | None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> tuple[list[PaletteListItem], int]:
+        public_only = requesting_user_id != user_id
+        palettes, total = await self._palette_repository.list_by_user(
+            user_id, limit, offset, public_only
+        )
+        items = await build_palette_list_items(self._palette_color_repository, palettes)
+        return items, total
 
     async def list_public_palettes_by_tag(
         self, tag_id: int, limit: int = 50, offset: int = 0
-    ) -> tuple[list[Palette], int]:
-        return await self._palette_repository.list_public_by_tag(tag_id, limit, offset)
+    ) -> tuple[list[PaletteListItem], int]:
+        palettes, total = await self._palette_repository.list_public_by_tag(
+            tag_id, limit, offset
+        )
+        items = await build_palette_list_items(self._palette_color_repository, palettes)
+        return items, total
 
     async def search_public_palettes(
         self, query: str, limit: int = 50, offset: int = 0
-    ) -> tuple[list[Palette], int]:
-        return await self._palette_repository.search_public(query, limit, offset)
+    ) -> tuple[list[PaletteListItem], int]:
+        palettes, total = await self._palette_repository.search_public(query, limit, offset)
+        items = await build_palette_list_items(self._palette_color_repository, palettes)
+        return items, total
 
     async def update_palette(
         self, palette_id: int, user_id: int, dto: UpdatePaletteDTO

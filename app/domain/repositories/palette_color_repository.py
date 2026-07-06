@@ -20,3 +20,11 @@ class PaletteColorRepository(ABC):
     async def reorder(
         self, palette_id: int, ordered_ids: list[int]
     ) -> list[PaletteColor]: ...
+
+    @abstractmethod
+    async def list_for_palettes_capped(
+        self, palette_ids: list[int], colors_limit: int
+    ) -> dict[int, list[PaletteColor]]: ...
+
+    @abstractmethod
+    async def count_by_palette(self, palette_ids: list[int]) -> dict[int, int]: ...

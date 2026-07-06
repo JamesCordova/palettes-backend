@@ -6,7 +6,7 @@ from app.application.services.favorite_service import FavoriteService
 from app.core.constants import DEFAULT_PAGE_SIZE
 from app.presentation.dependencies import get_current_user_id, get_favorite_service
 from app.presentation.schemas.pagination_schema import Paginated
-from app.presentation.schemas.palette_schema import PaletteRead
+from app.presentation.schemas.palette_schema import PaletteListItemRead
 
 router = APIRouter(tags=["favorites"])
 
@@ -28,17 +28,17 @@ async def unfavorite_palette(
     await service.unfavorite_palette(current_user_id, palette_id)
 
 
-@router.get("/users/{user_id}/favorites", response_model=Paginated[PaletteRead])
+@router.get("/users/{user_id}/favorites", response_model=Paginated[PaletteListItemRead])
 async def list_favorites(
     user_id: int,
     service: FavoriteServiceDep,
     current_user_id: CurrentUserIdDep,
     limit: int = Query(default=DEFAULT_PAGE_SIZE, le=200),
     offset: int = 0,
-) -> Paginated[PaletteRead]:
-    palettes, total = await service.list_favorites(user_id, current_user_id, limit, offset)
+) -> Paginated[PaletteListItemRead]:
+    items, total = await service.list_favorites(user_id, current_user_id, limit, offset)
     return Paginated(
-        items=[PaletteRead.model_validate(p) for p in palettes],
+        items=[PaletteListItemRead.from_item(item) for item in items],
         total=total,
         limit=limit,
         offset=offset,

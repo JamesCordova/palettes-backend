@@ -21,7 +21,7 @@ class PaletteRepository(ABC):
 
     @abstractmethod
     async def list_by_user(
-        self, user_id: int, limit: int = 50, offset: int = 0
+        self, user_id: int, limit: int = 50, offset: int = 0, public_only: bool = False
     ) -> tuple[list[Palette], int]: ...
 
     @abstractmethod

@@ -1,5 +1,8 @@
-from sqlalchemy import select
+from collections import defaultdict
+
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import aliased
 
 from app.core.exceptions import NotFoundError
 from app.domain.entities.palette_color import PaletteColor
@@ -71,3 +74,40 @@ class SQLAlchemyPaletteColorRepository(PaletteColorRepository):
             model.position = position
         await self._session.flush()
         return await self.list_for_palette(palette_id)
+
+    async def list_for_palettes_capped(
+        self, palette_ids: list[int], colors_limit: int
+    ) -> dict[int, list[PaletteColor]]:
+        if not palette_ids:
+            return {}
+        row_number = (
+            func.row_number()
+            .over(
+                partition_by=PaletteColorModel.palette_id,
+                order_by=PaletteColorModel.position,
+            )
+            .label("rn")
+        )
+        subquery = (
+            select(PaletteColorModel, row_number)
+            .where(PaletteColorModel.palette_id.in_(palette_ids))
+            .subquery()
+        )
+        ranked = aliased(PaletteColorModel, subquery)
+        result = await self._session.execute(
+            select(ranked).where(subquery.c.rn <= colors_limit)
+        )
+        colors_by_palette: dict[int, list[PaletteColor]] = defaultdict(list)
+        for model in result.scalars().all():
+            colors_by_palette[model.palette_id].append(_to_entity(model))
+        return dict(colors_by_palette)
+
+    async def count_by_palette(self, palette_ids: list[int]) -> dict[int, int]:
+        if not palette_ids:
+            return {}
+        result = await self._session.execute(
+            select(PaletteColorModel.palette_id, func.count())
+            .where(PaletteColorModel.palette_id.in_(palette_ids))
+            .group_by(PaletteColorModel.palette_id)
+        )
+        return {palette_id: count for palette_id, count in result.all()}

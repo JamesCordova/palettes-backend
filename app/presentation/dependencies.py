@@ -90,8 +90,11 @@ def get_color_catalog_service(
 
 def get_favorite_service(
     favorite_repository: Annotated[FavoriteRepository, Depends(get_favorite_repository)],
+    palette_color_repository: Annotated[
+        PaletteColorRepository, Depends(get_palette_color_repository)
+    ],
 ) -> FavoriteService:
-    return FavoriteService(favorite_repository)
+    return FavoriteService(favorite_repository, palette_color_repository)
 
 
 def get_tag_service(

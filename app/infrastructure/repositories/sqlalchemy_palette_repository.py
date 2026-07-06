@@ -62,9 +62,12 @@ class SQLAlchemyPaletteRepository(PaletteRepository):
         return await self._paginate(base, limit, offset)
 
     async def list_by_user(
-        self, user_id: int, limit: int = 50, offset: int = 0
+        self, user_id: int, limit: int = 50, offset: int = 0, public_only: bool = False
     ) -> tuple[list[Palette], int]:
-        base = select(PaletteModel).where(PaletteModel.user_id == user_id)
+        conditions = [PaletteModel.user_id == user_id]
+        if public_only:
+            conditions.append(PaletteModel.is_public.is_(True))
+        base = select(PaletteModel).where(*conditions)
         return await self._paginate(base, limit, offset)
 
     async def list_public_by_tag(

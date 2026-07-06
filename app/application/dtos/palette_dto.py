@@ -1,5 +1,15 @@
 from dataclasses import dataclass
 
+from app.domain.entities.palette import Palette
+from app.domain.entities.palette_color import PaletteColor
+
+
+@dataclass
+class PaletteListItem:
+    palette: Palette
+    colors: list[PaletteColor]
+    color_count: int
+
 
 @dataclass
 class CreatePaletteDTO:
