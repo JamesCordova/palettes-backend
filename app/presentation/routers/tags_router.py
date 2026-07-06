@@ -23,10 +23,19 @@ async def create_tag(payload: TagCreate, service: TagServiceDep) -> TagRead:
     return TagRead.model_validate(tag)
 
 
-@router.get("", response_model=list[TagRead])
-async def list_tags(service: TagServiceDep) -> list[TagRead]:
-    tags = await service.list_tags()
-    return [TagRead.model_validate(t) for t in tags]
+@router.get("", response_model=Paginated[TagRead])
+async def list_tags(
+    service: TagServiceDep,
+    limit: int = Query(default=DEFAULT_PAGE_SIZE, le=200),
+    offset: int = 0,
+) -> Paginated[TagRead]:
+    tags, total = await service.list_tags(limit, offset)
+    return Paginated(
+        items=[TagRead.model_validate(t) for t in tags],
+        total=total,
+        limit=limit,
+        offset=offset,
+    )
 
 
 @router.delete("/{tag_id}", status_code=status.HTTP_204_NO_CONTENT)

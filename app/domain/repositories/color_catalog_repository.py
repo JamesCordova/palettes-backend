@@ -15,8 +15,10 @@ class ColorCatalogRepository(ABC):
 
     @abstractmethod
     async def list_by_hue_range(
-        self, min_hue: int, max_hue: int, limit: int = 50
-    ) -> list[ColorCatalog]: ...
+        self, min_hue: int, max_hue: int, limit: int = 50, offset: int = 0
+    ) -> tuple[list[ColorCatalog], int]: ...
 
     @abstractmethod
-    async def list_most_used(self, limit: int = 20) -> list[ColorCatalog]: ...
+    async def list_most_used(
+        self, limit: int = 20, offset: int = 0
+    ) -> tuple[list[ColorCatalog], int]: ...

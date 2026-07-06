@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import NotFoundError
@@ -34,9 +34,13 @@ class SQLAlchemyTagRepository(TagRepository):
         await self._session.refresh(model)
         return _to_entity(model)
 
-    async def list(self) -> list[Tag]:
-        result = await self._session.execute(select(TagModel))
-        return [_to_entity(model) for model in result.scalars().all()]
+    async def list(self, limit: int = 50, offset: int = 0) -> tuple[list[Tag], int]:
+        total = (
+            await self._session.execute(select(func.count()).select_from(TagModel))
+        ).scalar_one()
+        result = await self._session.execute(select(TagModel).limit(limit).offset(offset))
+        items = [_to_entity(model) for model in result.scalars().all()]
+        return items, total
 
     async def delete(self, tag_id: int) -> None:
         model = await self._session.get(TagModel, tag_id)

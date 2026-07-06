@@ -16,8 +16,14 @@ class ColorCatalogService:
             raise NotFoundError(f"Color {hex_code} not found")
         return color
 
-    async def browse_by_hue(self, min_hue: int, max_hue: int, limit: int = 50) -> list[ColorCatalog]:
-        return await self._color_catalog_repository.list_by_hue_range(min_hue, max_hue, limit)
+    async def browse_by_hue(
+        self, min_hue: int, max_hue: int, limit: int = 50, offset: int = 0
+    ) -> tuple[list[ColorCatalog], int]:
+        return await self._color_catalog_repository.list_by_hue_range(
+            min_hue, max_hue, limit, offset
+        )
 
-    async def most_used(self, limit: int = 20) -> list[ColorCatalog]:
-        return await self._color_catalog_repository.list_most_used(limit)
+    async def most_used(
+        self, limit: int = 20, offset: int = 0
+    ) -> tuple[list[ColorCatalog], int]:
+        return await self._color_catalog_repository.list_most_used(limit, offset)

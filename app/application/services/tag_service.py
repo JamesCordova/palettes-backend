@@ -13,8 +13,8 @@ class TagService:
             raise ConflictError(f"Tag '{dto.name}' already exists")
         return await self._tag_repository.create(Tag(id=None, name=dto.name))
 
-    async def list_tags(self) -> list[Tag]:
-        return await self._tag_repository.list()
+    async def list_tags(self, limit: int = 50, offset: int = 0) -> tuple[list[Tag], int]:
+        return await self._tag_repository.list(limit, offset)
 
     async def get_or_create(self, name: str) -> Tag:
         tag = await self._tag_repository.get_by_name(name)

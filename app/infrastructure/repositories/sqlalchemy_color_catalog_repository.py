@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.entities.color_catalog import ColorCatalog
@@ -43,17 +43,27 @@ class SQLAlchemyColorCatalogRepository(ColorCatalogRepository):
         return _to_entity(model)
 
     async def list_by_hue_range(
-        self, min_hue: int, max_hue: int, limit: int = 50
-    ) -> list[ColorCatalog]:
-        result = await self._session.execute(
-            select(ColorCatalogModel)
-            .where(ColorCatalogModel.hue >= min_hue, ColorCatalogModel.hue <= max_hue)
-            .limit(limit)
+        self, min_hue: int, max_hue: int, limit: int = 50, offset: int = 0
+    ) -> tuple[list[ColorCatalog], int]:
+        base = select(ColorCatalogModel).where(
+            ColorCatalogModel.hue >= min_hue, ColorCatalogModel.hue <= max_hue
         )
-        return [_to_entity(model) for model in result.scalars().all()]
+        return await self._paginate(base, limit, offset)
 
-    async def list_most_used(self, limit: int = 20) -> list[ColorCatalog]:
-        result = await self._session.execute(
-            select(ColorCatalogModel).order_by(ColorCatalogModel.usage_count.desc()).limit(limit)
-        )
-        return [_to_entity(model) for model in result.scalars().all()]
+    async def list_most_used(
+        self, limit: int = 20, offset: int = 0
+    ) -> tuple[list[ColorCatalog], int]:
+        base = select(ColorCatalogModel).order_by(ColorCatalogModel.usage_count.desc())
+        return await self._paginate(base, limit, offset)
+
+    async def _paginate(
+        self, base_query, limit: int, offset: int
+    ) -> tuple[list[ColorCatalog], int]:
+        total = (
+            await self._session.execute(
+                select(func.count()).select_from(base_query.subquery())
+            )
+        ).scalar_one()
+        result = await self._session.execute(base_query.limit(limit).offset(offset))
+        items = [_to_entity(model) for model in result.scalars().all()]
+        return items, total
