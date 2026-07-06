@@ -135,7 +135,7 @@ class PaletteService:
         position = dto.position
         if position is None:
             existing = await self._palette_color_repository.list_for_palette(palette_id)
-            position = len(existing) + 1
+            position = max((c.position for c in existing), default=0) + 1
         return await self._palette_color_repository.add(
             PaletteColor(
                 id=None,

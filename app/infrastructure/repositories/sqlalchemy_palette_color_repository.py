@@ -1,10 +1,11 @@
 from collections import defaultdict
 
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import aliased
 
-from app.core.exceptions import NotFoundError
+from app.core.exceptions import ConflictError, NotFoundError
 from app.domain.entities.palette_color import PaletteColor
 from app.domain.repositories.palette_color_repository import PaletteColorRepository
 from app.infrastructure.models.palette_color_model import PaletteColorModel
@@ -40,7 +41,13 @@ class SQLAlchemyPaletteColorRepository(PaletteColorRepository):
             position=palette_color.position,
         )
         self._session.add(model)
-        await self._session.flush()
+        try:
+            await self._session.flush()
+        except IntegrityError as exc:
+            raise ConflictError(
+                f"Position {palette_color.position} is already taken in palette "
+                f"{palette_color.palette_id}"
+            ) from exc
         await self._session.refresh(model)
         return _to_entity(model)
 
