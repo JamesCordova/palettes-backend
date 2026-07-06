@@ -63,6 +63,13 @@ class SQLAlchemyUserRepository(UserRepository):
         await self._session.refresh(model)
         return _to_entity(model)
 
+    async def update_password_hash(self, user_id: int, password_hash: str) -> None:
+        model = await self._session.get(UserModel, user_id)
+        if model is None:
+            raise NotFoundError(f"User {user_id} not found")
+        model.password_hash = password_hash
+        await self._session.flush()
+
     async def delete(self, user_id: int) -> None:
         model = await self._session.get(UserModel, user_id)
         if model is None:

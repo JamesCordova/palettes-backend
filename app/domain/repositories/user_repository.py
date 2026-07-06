@@ -22,6 +22,9 @@ class UserRepository(ABC):
     async def update(self, user: User) -> User: ...
 
     @abstractmethod
+    async def update_password_hash(self, user_id: int, password_hash: str) -> None: ...
+
+    @abstractmethod
     async def delete(self, user_id: int) -> None: ...
 
     @abstractmethod

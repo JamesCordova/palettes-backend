@@ -29,3 +29,8 @@ class UserRead(BaseModel):
 class UserAvailability(BaseModel):
     username_available: bool | None
     email_available: bool | None
+
+
+class ChangePasswordRequest(BaseModel):
+    old_password: str
+    new_password: str
