@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import NotFoundError
@@ -30,7 +30,7 @@ class SQLAlchemyUserRepository(UserRepository):
 
     async def get_by_username(self, username: str) -> User | None:
         result = await self._session.execute(
-            select(UserModel).where(UserModel.username == username)
+            select(UserModel).where(func.lower(UserModel.username) == username.lower())
         )
         model = result.scalar_one_or_none()
         return _to_entity(model) if model else None
