@@ -1,6 +1,7 @@
 from app.application.dtos.palette_color_dto import (
     AddPaletteColorDTO,
     ReorderPaletteColorDTO,
+    UpdatePaletteColorDTO,
 )
 from app.application.dtos.palette_dto import (
     CreatePaletteDTO,
@@ -142,6 +143,42 @@ class PaletteService:
                 palette_id=palette_id,
                 hex_code=dto.hex_code,
                 position=position,
+            )
+        )
+
+    async def update_color(
+        self,
+        palette_id: int,
+        user_id: int,
+        palette_color_id: int,
+        dto: UpdatePaletteColorDTO,
+    ) -> PaletteColor:
+        await self._get_owned_palette(palette_id, user_id)
+        existing = await self._palette_color_repository.get_by_id(palette_color_id)
+        if existing is None or existing.palette_id != palette_id:
+            raise NotFoundError(
+                f"PaletteColor {palette_color_id} not found in palette {palette_id}"
+            )
+        # The new hex may never have been used before, so it needs a
+        # color_catalog row to satisfy the FK — same upsert-before-link
+        # pattern as add_color.
+        await self._color_catalog_repository.upsert(
+            ColorCatalog(
+                hex_code=dto.hex_code,
+                hue=dto.hue,
+                saturation=dto.saturation,
+                lightness=dto.lightness,
+                luminance=dto.luminance,
+                usage_count=0,
+                created_at=None,
+            )
+        )
+        return await self._palette_color_repository.update(
+            PaletteColor(
+                id=palette_color_id,
+                palette_id=palette_id,
+                hex_code=dto.hex_code,
+                position=existing.position,
             )
         )
 
