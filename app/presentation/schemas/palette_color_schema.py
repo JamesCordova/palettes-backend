@@ -9,13 +9,11 @@ class PaletteColorCreate(BaseModel):
     saturation: int = Field(ge=0, le=100)
     lightness: int = Field(ge=0, le=100)
     luminance: float = Field(ge=0, le=255)
-    name: str | None = None
     position: int | None = None
 
 
 class PaletteColorUpdate(BaseModel):
     hex_code: str = Field(pattern=HEX_CODE_PATTERN)
-    name: str | None = None
 
 
 class ReorderPaletteColorsRequest(BaseModel):

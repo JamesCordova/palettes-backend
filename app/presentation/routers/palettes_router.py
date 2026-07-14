@@ -146,7 +146,6 @@ async def add_color(
             saturation=payload.saturation,
             lightness=payload.lightness,
             luminance=payload.luminance,
-            name=payload.name,
             position=payload.position,
         ),
     )

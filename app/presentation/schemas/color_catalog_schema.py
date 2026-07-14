@@ -14,3 +14,8 @@ class ColorCatalogRead(BaseModel):
     luminance: Decimal
     usage_count: int
     created_at: datetime | None
+    name: str | None
+
+
+class ColorCatalogUpdate(BaseModel):
+    name: str | None
