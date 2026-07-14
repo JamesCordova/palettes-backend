@@ -25,6 +25,13 @@ class SQLAlchemyPaletteColorRepository(PaletteColorRepository):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
+    async def get_by_id(self, palette_color_id: int) -> PaletteColor | None:
+        result = await self._session.execute(
+            select(PaletteColorModel).where(PaletteColorModel.id == palette_color_id)
+        )
+        model = result.scalar_one_or_none()
+        return _to_entity(model) if model else None
+
     async def list_for_palette(self, palette_id: int) -> list[PaletteColor]:
         result = await self._session.execute(
             select(PaletteColorModel)
