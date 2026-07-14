@@ -16,8 +16,8 @@ def _to_entity(model: PaletteColorModel) -> PaletteColor:
         id=model.id,
         palette_id=model.palette_id,
         hex_code=model.hex_code,
-        name=model.name,
         position=model.position,
+        name=model.color.name if model.color is not None else None,
     )
 
 
@@ -37,7 +37,6 @@ class SQLAlchemyPaletteColorRepository(PaletteColorRepository):
         model = PaletteColorModel(
             palette_id=palette_color.palette_id,
             hex_code=palette_color.hex_code,
-            name=palette_color.name,
             position=palette_color.position,
         )
         self._session.add(model)
@@ -48,7 +47,7 @@ class SQLAlchemyPaletteColorRepository(PaletteColorRepository):
                 f"Position {palette_color.position} is already taken in palette "
                 f"{palette_color.palette_id}"
             ) from exc
-        await self._session.refresh(model)
+        await self._session.refresh(model, attribute_names=["color"])
         return _to_entity(model)
 
     async def update(self, palette_color: PaletteColor) -> PaletteColor:
@@ -56,10 +55,9 @@ class SQLAlchemyPaletteColorRepository(PaletteColorRepository):
         if model is None:
             raise NotFoundError(f"PaletteColor {palette_color.id} not found")
         model.hex_code = palette_color.hex_code
-        model.name = palette_color.name
         model.position = palette_color.position
         await self._session.flush()
-        await self._session.refresh(model)
+        await self._session.refresh(model, attribute_names=["color"])
         return _to_entity(model)
 
     async def remove(self, palette_color_id: int) -> None:

@@ -1,6 +1,7 @@
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.exceptions import NotFoundError
 from app.domain.entities.color_catalog import ColorCatalog
 from app.domain.repositories.color_catalog_repository import ColorCatalogRepository
 from app.infrastructure.models.color_catalog_model import ColorCatalogModel
@@ -15,6 +16,7 @@ def _to_entity(model: ColorCatalogModel) -> ColorCatalog:
         luminance=model.luminance,
         usage_count=model.usage_count,
         created_at=model.created_at,
+        name=model.name,
     )
 
 
@@ -38,6 +40,15 @@ class SQLAlchemyColorCatalogRepository(ColorCatalogRepository):
             luminance=color.luminance,
         )
         self._session.add(model)
+        await self._session.flush()
+        await self._session.refresh(model)
+        return _to_entity(model)
+
+    async def update_name(self, hex_code: str, name: str | None) -> ColorCatalog:
+        model = await self._session.get(ColorCatalogModel, hex_code)
+        if model is None:
+            raise NotFoundError(f"Color {hex_code} not found")
+        model.name = name
         await self._session.flush()
         await self._session.refresh(model)
         return _to_entity(model)
