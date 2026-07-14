@@ -30,8 +30,8 @@ def _color_to_entity(model: PaletteColorModel) -> PaletteColor:
         id=model.id,
         palette_id=model.palette_id,
         hex_code=model.hex_code,
-        name=model.name,
         position=model.position,
+        name=model.color.name if model.color is not None else None,
     )
 
 
@@ -156,7 +156,6 @@ class SQLAlchemyPaletteRepository(PaletteRepository):
                 PaletteColorModel(
                     palette_id=forked.id,
                     hex_code=color.hex_code,
-                    name=color.name,
                     position=color.position,
                 )
             )
