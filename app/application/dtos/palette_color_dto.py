@@ -14,6 +14,10 @@ class AddPaletteColorDTO:
 @dataclass
 class UpdatePaletteColorDTO:
     hex_code: str
+    hue: int
+    saturation: int
+    lightness: int
+    luminance: float
 
 
 @dataclass
