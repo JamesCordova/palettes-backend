@@ -5,6 +5,9 @@ from app.domain.entities.palette_color import PaletteColor
 
 class PaletteColorRepository(ABC):
     @abstractmethod
+    async def get_by_id(self, palette_color_id: int) -> PaletteColor | None: ...
+
+    @abstractmethod
     async def list_for_palette(self, palette_id: int) -> list[PaletteColor]: ...
 
     @abstractmethod
