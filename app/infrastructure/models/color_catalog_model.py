@@ -23,3 +23,6 @@ class ColorCatalogModel(Base):
     # written or updated by application/repository code.
     usage_count: Mapped[int] = mapped_column(server_default="0")
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    # A color is named once, globally — not per palette-use. See migration
+    # that moves this off palette_colors.
+    name: Mapped[str | None] = mapped_column(String(50), nullable=True)

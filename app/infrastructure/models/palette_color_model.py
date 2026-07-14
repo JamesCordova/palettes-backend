@@ -6,6 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.infrastructure.db.base import Base
 
 if TYPE_CHECKING:
+    from app.infrastructure.models.color_catalog_model import ColorCatalogModel
     from app.infrastructure.models.palette_model import PaletteModel
 
 
@@ -24,7 +25,7 @@ class PaletteColorModel(Base):
     hex_code: Mapped[str] = mapped_column(
         String(7), ForeignKey("color_catalog.hex_code"), nullable=False
     )
-    name: Mapped[str | None] = mapped_column(String(50), nullable=True)
     position: Mapped[int] = mapped_column(SmallInteger, nullable=False)
 
     palette: Mapped["PaletteModel"] = relationship(back_populates="colors", lazy="selectin")
+    color: Mapped["ColorCatalogModel"] = relationship(lazy="selectin")
