@@ -12,3 +12,4 @@ class ColorCatalog:
     luminance: Decimal
     usage_count: int
     created_at: datetime | None
+    name: str | None = None

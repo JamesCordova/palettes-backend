@@ -14,6 +14,9 @@ class ColorCatalogRepository(ABC):
     async def upsert(self, color: ColorCatalog) -> ColorCatalog: ...
 
     @abstractmethod
+    async def update_name(self, hex_code: str, name: str | None) -> ColorCatalog: ...
+
+    @abstractmethod
     async def list_by_hue_range(
         self, min_hue: int, max_hue: int, limit: int = 50, offset: int = 0
     ) -> tuple[list[ColorCatalog], int]: ...
