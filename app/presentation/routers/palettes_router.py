@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, Query, status
 from app.application.dtos.palette_color_dto import (
     AddPaletteColorDTO,
     ReorderPaletteColorDTO,
+    UpdatePaletteColorDTO,
 )
 from app.application.dtos.palette_dto import CreatePaletteDTO, ForkPaletteDTO, UpdatePaletteDTO
 from app.application.services.palette_service import PaletteService
@@ -17,6 +18,7 @@ from app.presentation.dependencies import (
 from app.presentation.schemas.palette_color_schema import (
     PaletteColorCreate,
     PaletteColorRead,
+    PaletteColorUpdate,
     ReorderPaletteColorsRequest,
 )
 from app.presentation.schemas.pagination_schema import Paginated
@@ -148,6 +150,29 @@ async def add_color(
             lightness=payload.lightness,
             luminance=payload.luminance,
             position=payload.position,
+        ),
+    )
+    return PaletteColorRead.model_validate(color)
+
+
+@router.patch("/{palette_id}/colors/{color_id}", response_model=PaletteColorRead)
+async def update_color(
+    palette_id: int,
+    color_id: int,
+    payload: PaletteColorUpdate,
+    service: PaletteServiceDep,
+    current_user_id: CurrentUserIdDep,
+) -> PaletteColorRead:
+    color = await service.update_color(
+        palette_id,
+        current_user_id,
+        color_id,
+        UpdatePaletteColorDTO(
+            hex_code=payload.hex_code,
+            hue=payload.hue,
+            saturation=payload.saturation,
+            lightness=payload.lightness,
+            luminance=payload.luminance,
         ),
     )
     return PaletteColorRead.model_validate(color)

@@ -14,6 +14,10 @@ class PaletteColorCreate(BaseModel):
 
 class PaletteColorUpdate(BaseModel):
     hex_code: str = Field(pattern=HEX_CODE_PATTERN)
+    hue: int = Field(ge=0, le=360)
+    saturation: int = Field(ge=0, le=100)
+    lightness: int = Field(ge=0, le=100)
+    luminance: float = Field(ge=0, le=255)
 
 
 class ReorderPaletteColorsRequest(BaseModel):
