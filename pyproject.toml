@@ -11,6 +11,7 @@ dependencies = [
     "email-validator>=2.3.0",
     "fastapi[standard]>=0.139.0",
     "greenlet>=3.5.3",
+    "httpx>=0.28.1",
     "passlib[bcrypt]>=1.7.4",
     "pydantic>=2",
     "pydantic-settings>=2.14.2",
@@ -21,7 +22,6 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "httpx>=0.28.1",
     "pytest>=9.1.1",
     "pytest-asyncio>=1.4.0",
 ]
