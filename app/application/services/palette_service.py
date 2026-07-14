@@ -141,7 +141,6 @@ class PaletteService:
                 id=None,
                 palette_id=palette_id,
                 hex_code=dto.hex_code,
-                name=dto.name,
                 position=position,
             )
         )
