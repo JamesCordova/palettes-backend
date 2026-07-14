@@ -28,6 +28,7 @@ from app.presentation.schemas.palette_schema import (
     PaletteUpdate,
     PaletteWithColorsRead,
 )
+from app.presentation.schemas.tag_schema import TagRead
 
 router = APIRouter(prefix="/palettes", tags=["palettes"])
 
@@ -170,6 +171,12 @@ async def reorder_colors(
         palette_id, current_user_id, ReorderPaletteColorDTO(ordered_ids=payload.ordered_ids)
     )
     return [PaletteColorRead.model_validate(c) for c in colors]
+
+
+@router.get("/{palette_id}/tags", response_model=list[TagRead])
+async def list_palette_tags(palette_id: int, service: PaletteServiceDep) -> list[TagRead]:
+    tags = await service.list_tags(palette_id)
+    return [TagRead.model_validate(t) for t in tags]
 
 
 @router.post("/{palette_id}/tags/{tag_id}", status_code=status.HTTP_204_NO_CONTENT)
